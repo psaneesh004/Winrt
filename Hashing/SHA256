@@ -1,0 +1,13 @@
+public class HashingHelper
+    {
+        /// <summary>
+        /// Method to compute the hash of the password 
+        /// </summary>
+        /// <param name="password"></param>
+        /// <returns></returns>
+        public static string GetSHA256Hash(string password)
+        {
+            var hash = SHA256.Create().ComputeHash(Encoding.UTF8.GetBytes(password));
+            return Convert.ToBase64String(hash);
+        }
+    }
