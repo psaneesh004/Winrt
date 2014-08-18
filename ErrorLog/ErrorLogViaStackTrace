@@ -1,0 +1,82 @@
+public class ErrorHandler
+    {
+        #region Constants
+        private const string ERRORLOG = "ERRORLOG";
+        #endregion
+
+        #region singleton Instance
+
+        private static ErrorHandler instance;
+        public static ErrorHandler Instance
+        {
+            get
+            {
+                if (instance == null) instance = new ErrorHandler();
+                return instance;
+            }
+
+        }
+        #endregion
+
+        #region Local Declarations
+        private string stackTrace = string.Empty;
+        private string errorMesssage = string.Empty;
+        private string stackTraceInnerException = string.Empty;
+        private string errorMessageInnerException = string.Empty;
+        private string occuredException = string.Empty;
+        #endregion
+
+        #region Region to write error Details
+
+        /// <summary>
+        /// Method that save the error to local folder 
+        /// </summary>
+        /// <param name="e"></param>
+        public async void LogError(Exception e)
+        {
+            try
+            {
+                var dt = DateTime.UtcNow.ToString();
+                var time = DateTime.UtcNow.ToString();
+                if (!string.IsNullOrEmpty(e.StackTrace))
+                    stackTrace = e.StackTrace;
+                else
+                    stackTrace = "Stack trace unavailable";
+
+                if (!string.IsNullOrEmpty(e.Message))
+                    errorMesssage = e.Message;
+                else
+                    errorMesssage = "Message unavailable";
+
+                if (e.InnerException != null)
+                {
+                    if (!string.IsNullOrEmpty(e.InnerException.StackTrace))
+                        stackTraceInnerException = e.InnerException.StackTrace;
+                    else
+                        stackTraceInnerException = "Inner Exception Stack trace unavailable";
+
+                    if (!string.IsNullOrEmpty(e.InnerException.Message))
+                        errorMessageInnerException = e.InnerException.Message;
+                    else
+                        errorMessageInnerException = "Inner Exception Message unavailable";
+                    occuredException = Environment.NewLine + "--------------------------------------------------------------------------------------------" +
+                        Environment.NewLine + time + Environment.NewLine + "Inner Exception Occured " + errorMesssage + " : " + stackTrace + Environment.NewLine
+                        + Environment.NewLine + "Inner Exception " + errorMessageInnerException + " : " + stackTraceInnerException + Environment.NewLine +
+                       "Outer Exception : " + errorMesssage + " : " + stackTrace + Environment.NewLine;
+                }
+                else
+                {
+                    occuredException = Environment.NewLine + "--------------------------------------------------------------------------------------------"
+                       + Environment.NewLine + time + Environment.NewLine + "Error Occured " + errorMesssage + " : " + stackTrace + Environment.NewLine;
+                }
+                await StorageHelper.WriteFileOpenIfExistsAsync<string>(ERRORLOG, occuredException, StorageHelper.StorageStrategies.Local, CreationCollisionOption.OpenIfExists); // WriteLocalCacheAsync(occuredException, dt);
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine("Exception Caught {0} in {1}", ex.Message, GetType());
+            }
+        }
+
+        #endregion
+
+    }
